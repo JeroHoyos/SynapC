@@ -129,6 +129,89 @@ Tensor matmul(Tensor* a, Tensor* b) {
     assert(0 && "Unsupported matmul shapes");
 }
 
+Tensor softmax(Tensor* a, int axis) {
+    int axis_pos = (0 < axis) ? a->ndim : axis;
+    
+    if (a->ndim == 2 && axis_pos == 1) {
+
+        int rows = a->shape[0];
+        int cols = a->shape[1];
+        float* result = malloc(rows * cols * sizeof(float));
+
+        for (int i = 0; i < rows; i++) {
+
+            int start = i * cols;
+
+            float* row = &a->data[start];
+
+            float max = -INFINITY;
+
+            for (int j = 0; j < cols; j++) {
+                if (row[j] > max) {
+                    max = row[j];
+                }
+            }
 
 
+            float* exp_values = malloc(cols * sizeof(float));
+
+    
+            for (int j = 0; j < cols; j++) {
+                float exp_value = exp(row[j] - max);
+                exp_values[j] = exp_value;
+            }
+
+            float sum = 0;
+
+            for (int j = 0; j < cols; j++) {
+                sum += exp_values[j];
+            }
+
+            for (int j = 0; j < cols; j++) {
+                result[start + j] = exp_values[j] / sum;
+            }
+
+            free(exp_values);
+        }
+
+        return tensor_init(result,rows * cols,a->shape,a->ndim);
+    }
+
+    int size = 1;
+
+    for (int i = 0; i < a->ndim; i++) {
+        size *= a->shape[i];
+    }
+
+    float max = -INFINITY;
+
+    for (int i = 0; i < size; i++) {
+        if (a->data[i] > max) {
+            max = a->data[i];
+        }
+    }
+
+    float* exp_values = malloc(size * sizeof(float));
+
+    for (int i = 0; i < size; i++) {
+        exp_values[i] = exp(a->data[i] - max);
+    }
+
+    float sum = 0;
+
+    for (int i = 0; i < size; i++) {
+        sum += exp_values[i];
+    }
+
+    float* result = malloc(size * sizeof(float));
+
+    for (int i = 0; i < size; i++) {
+        result[i] = exp_values[i] / sum;
+    }
+
+    free(exp_values);
+
+    return tensor_init(result,size,a->shape,a->ndim);
+
+}
 

@@ -16,4 +16,6 @@ Tensor zeros(int* shape, int ndim);
 
 Tensor matmul(Tensor* a, Tensor* b);
 
+Tensor softmax(Tensor* a, int axis);
+
 #endif
